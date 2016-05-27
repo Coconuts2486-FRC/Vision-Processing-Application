@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VisionProcessing2._0"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="CocoNuts Image Processing" Height="400" Width="600" Loaded="Window_Loaded">
+    <Grid x:Name="grid">
     </Grid>
 </Window>
