@@ -4,8 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VisionProcessing2._0"
+        xmlns:emui="clr-namespace:Emgu.CV.UI;assembly=Emgu.CV.UI"
         mc:Ignorable="d"
-        Title="CocoNuts Image Processing" Height="400" Width="600" Loaded="Window_Loaded">
+        Title="CocoNuts Image Processing" Height="400" Width="600">
     <Grid x:Name="grid">
+        <WindowsFormsHost Width="400px" Height="200px" HorizontalAlignment="Left" VerticalAlignment="Top" Loaded="WindowsFormsHost_Loaded">
+            <emui:ImageBox x:Name="CapturedImageBox"></emui:ImageBox>
+        </WindowsFormsHost>
+        <Button x:Name="startButton" VerticalAlignment="Bottom" Height="20" Click="startButton_Click" ></Button>
+        <TextBlock x:Name="textBlock" Width="192" Height="200" VerticalAlignment="Top" HorizontalAlignment="Right" Background="AliceBlue"></TextBlock>
     </Grid>
 </Window>

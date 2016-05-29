@@ -26,36 +26,24 @@ namespace VisionProcessing2._0
         public MainWindow()
         {
             InitializeComponent();
-            startCapture();
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            System.Windows.Forms.Integration.WindowsFormsHost host = new System.Windows.Forms.Integration.WindowsFormsHost();
-            imageBox = new ImageBox();
-            host.Child = imageBox;
-            this.grid.Children.Add(host);
         }
 
         #region Display Image
-        private Capture capture;
-        private ImageBox imageBox;
+        private Capture capture = null;
         private bool captureInProgress;
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
         /// </summary>
         private void startCapture()
         {
-            //CvInvoke.UseOpenCL = false;
-
             //Disable OpenCL rendering and catch exceptions if CvInvoke.dll isn't found.
             try { CvInvoke.UseOpenCL = false; }
             catch (System.TypeInitializationException ex) { MessageBox.Show(
                 "An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
                 + "\nBEGIN MESSAGE \n ================\n" + ex.Message); }
-            
+
             //Create a new capture and attach an event to it.
-            try { capture = new Capture(); capture.ImageGrabbed += ProcessFrame; }
+            try { capture = new Capture(); capture.ImageGrabbed += ProcessFrame;}
             catch (NullReferenceException ex) { MessageBox.Show(ex.Message); }
         }
 
@@ -64,10 +52,12 @@ namespace VisionProcessing2._0
             Mat frame = new Mat();
             capture.Retrieve(frame, 0);
             sendFrame(frame);
+            textBlock.Text = "Processing...";
         }
         private void sendFrame(Mat frame)
         {
-            imageBox.Image = frame;
+            CapturedImageBox.Image = frame;
+            textBlock.Text = "Sending...";
         }
         private void ReleaseData()
         {
@@ -76,8 +66,31 @@ namespace VisionProcessing2._0
                 capture.Dispose();
             }
         }
+        private void startButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (capture != null)
+            {
+                if (captureInProgress == true)
+                {
+                    startButton.Content = "Start Capture";
+                    capture.Pause();
+                }
+                else
+                {
+                    startButton.Content = "Stop";
+                    capture.Start();
+                }
+            }
+        }
         #endregion
-
-
+        DispatcherTimer timer;
+        private void WindowsFormsHost_Loaded(object sender, RoutedEventArgs e)
+        {
+            startCapture();
+            timer = new DispatcherTimer();
+            timer.Tick += new EventHandler(ProcessFrame);
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            timer.Start();
+        }
     }
 }
