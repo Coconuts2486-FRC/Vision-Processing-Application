@@ -31,55 +31,55 @@ namespace VisionProcessing2._0
         #region Display Image
         private Capture capture = null;
         private bool captureInProgress;
+        TextBoxOutputter textBoxOutput;
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
         /// </summary>
         private void startCapture()
         {
+            textBoxOutput = new TextBoxOutputter(TextBoxConsole);
+            Console.SetOut(textBoxOutput);
+            Console.WriteLine("Initialized custom console output. Enjoy!");
             //Disable OpenCL rendering and catch exceptions if CvInvoke.dll isn't found.
             try { CvInvoke.UseOpenCL = false; }
-            catch (System.TypeInitializationException ex) { MessageBox.Show(
+            catch (TypeInitializationException ex) { MessageBox.Show(
                 "An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
                 + "\nBEGIN MESSAGE \n ================\n" + ex.Message); }
 
             //Create a new capture and attach an event to it.
-            try { capture = new Capture(); capture.ImageGrabbed += ProcessFrame;}
+            try { capture = new Capture(); }
             catch (NullReferenceException ex) { MessageBox.Show(ex.Message); }
+            setDimensions();
         }
-
+        private void setDimensions()
+        {
+            Mat frame = new Mat();
+            capture.Retrieve(frame, 0);
+            CapturedImageBox.Width = frame.Width;
+            CapturedImageBox.Height = frame.Height;
+            Console.WriteLine("Width of frame: {0} Width of ImageBox: {1}", frame.Width, CapturedImageBox.Width);
+            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1}", frame.Height, CapturedImageBox.Height);
+            column1.Width = new GridLength(frame.Width, GridUnitType.Pixel);
+        }
+        private void setOptimalProperties()
+        {
+            
+        }
         private void ProcessFrame(object sender, EventArgs arg)
         {
             Mat frame = new Mat();
             capture.Retrieve(frame, 0);
             sendFrame(frame);
-            textBlock.Text = "Processing...";
         }
         private void sendFrame(Mat frame)
         {
             CapturedImageBox.Image = frame;
-            textBlock.Text = "Sending...";
         }
         private void ReleaseData()
         {
             if (capture != null)
             {
                 capture.Dispose();
-            }
-        }
-        private void startButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (capture != null)
-            {
-                if (captureInProgress == true)
-                {
-                    startButton.Content = "Start Capture";
-                    capture.Pause();
-                }
-                else
-                {
-                    startButton.Content = "Stop";
-                    capture.Start();
-                }
             }
         }
         #endregion
