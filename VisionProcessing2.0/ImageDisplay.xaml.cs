@@ -26,11 +26,19 @@ namespace VisionProcessing2._0
         public MainWindow()
         {
             InitializeComponent();
+            startCapture();
+            timerSetup();
         }
-
+        DispatcherTimer timer;
+        private void timerSetup()
+        {
+            timer = new DispatcherTimer();
+            timer.Tick += new EventHandler(ProcessFrame);
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            timer.Start();
+        }
         #region Display Image
-        private Capture capture = null;
-        private bool captureInProgress;
+        private CameraManagement camManager;
         TextBoxOutputter textBoxOutput;
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
@@ -47,28 +55,38 @@ namespace VisionProcessing2._0
                 + "\nBEGIN MESSAGE \n ================\n" + ex.Message); }
 
             //Create a new capture and attach an event to it.
-            try { capture = new Capture(); }
+            try { camManager = new CameraManagement(); }
             catch (NullReferenceException ex) { MessageBox.Show(ex.Message); }
+            camManager = new CameraManagement();
             setDimensions();
         }
         private void setDimensions()
         {
+            int ratio = 2;
             Mat frame = new Mat();
-            capture.Retrieve(frame, 0);
-            CapturedImageBox.Width = frame.Width;
-            CapturedImageBox.Height = frame.Height;
-            Console.WriteLine("Width of frame: {0} Width of ImageBox: {1}", frame.Width, CapturedImageBox.Width);
-            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1}", frame.Height, CapturedImageBox.Height);
-            column1.Width = new GridLength(frame.Width, GridUnitType.Pixel);
+            camManager.Retrieve(frame, 0);
+            CapturedImageBox.Width = frame.Width / ratio;
+            CapturedImageBox.Height = frame.Height / ratio;
+            Console.WriteLine("Width of frame: {0} Width of ImageBox: {1} Final width: {2}", frame.Width, CapturedImageBox.Width, frame.Width / ratio);
+            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Width / ratio);
+            column1.Width = new GridLength(frame.Width / ratio, GridUnitType.Pixel);
+            row1.Height = new GridLength(frame.Height / ratio, GridUnitType.Pixel);
+            Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
+            CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
+            CapturedImageBox.SetZoomScale(1/ratio, new System.Drawing.Point(0, 0));
         }
         private void setOptimalProperties()
         {
             
         }
+        private void zoomScaleUpdated(object sender, EventArgs arg)
+        {
+            Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
+        }
         private void ProcessFrame(object sender, EventArgs arg)
         {
             Mat frame = new Mat();
-            capture.Retrieve(frame, 0);
+            camManager.Retrieve(frame, 0);
             sendFrame(frame);
         }
         private void sendFrame(Mat frame)
@@ -77,20 +95,11 @@ namespace VisionProcessing2._0
         }
         private void ReleaseData()
         {
-            if (capture != null)
+            if (camManager != null)
             {
-                capture.Dispose();
+                camManager.Dispose();
             }
         }
         #endregion
-        DispatcherTimer timer;
-        private void WindowsFormsHost_Loaded(object sender, RoutedEventArgs e)
-        {
-            startCapture();
-            timer = new DispatcherTimer();
-            timer.Tick += new EventHandler(ProcessFrame);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
-            timer.Start();
-        }
     }
 }

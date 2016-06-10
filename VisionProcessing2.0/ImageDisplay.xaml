@@ -12,11 +12,16 @@
             <ColumnDefinition Name="column1"/>
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
-        <WindowsFormsHost Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Loaded="WindowsFormsHost_Loaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Name="row1"/>
+            <RowDefinition Height="70"/>
+        </Grid.RowDefinitions>
+        <WindowsFormsHost Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
             <emui:ImageBox x:Name="CapturedImageBox"></emui:ImageBox>
         </WindowsFormsHost>
-        <ScrollViewer Grid.Column="1">
+        <ScrollViewer Grid.Column="1" Grid.Row="0">
             <TextBox x:Name="TextBoxConsole" FontFamily="Consolas"></TextBox>
         </ScrollViewer>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Camera Settings" VerticalAlignment="Top" TextDecorations="Underline"/>
     </Grid>
 </Window>
