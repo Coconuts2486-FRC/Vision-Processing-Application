@@ -26,6 +26,11 @@ namespace VisionProcessing2._0
         public MainWindow()
         {
             InitializeComponent();
+            #if DEBUG
+            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.Everything;
+            #else
+            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.PanAndZoom;
+            #endif
             startCapture();
             timerSetup();
         }
@@ -34,11 +39,11 @@ namespace VisionProcessing2._0
         {
             timer = new DispatcherTimer();
             timer.Tick += new EventHandler(ProcessFrame);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 33);
             timer.Start();
         }
         #region Display Image
-        private CameraManagement camManager;
+        private CameraManagement camManager = null;
         TextBoxOutputter textBoxOutput;
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
@@ -56,9 +61,10 @@ namespace VisionProcessing2._0
 
             //Create a new capture and attach an event to it.
             try { camManager = new CameraManagement(); }
-            catch (NullReferenceException ex) { MessageBox.Show(ex.Message); }
-            camManager = new CameraManagement();
+            catch (NullReferenceException ex) { MessageBox.Show("Camera Manager could not be instantiated.\nBEGIN MESSAGE\n============\n" + ex.Message); }
             setDimensions();
+            setOptimalProperties();
+            timerSetup();
         }
         private void setDimensions()
         {
@@ -68,16 +74,19 @@ namespace VisionProcessing2._0
             CapturedImageBox.Width = frame.Width / ratio;
             CapturedImageBox.Height = frame.Height / ratio;
             Console.WriteLine("Width of frame: {0} Width of ImageBox: {1} Final width: {2}", frame.Width, CapturedImageBox.Width, frame.Width / ratio);
-            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Width / ratio);
-            column1.Width = new GridLength(frame.Width / ratio, GridUnitType.Pixel);
-            row1.Height = new GridLength(frame.Height / ratio, GridUnitType.Pixel);
+            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Height / ratio);
+            SourceCanvas.Width = frame.Width / ratio;
+            SourceCanvas.Height = frame.Height / ratio;
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
             CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
             CapturedImageBox.SetZoomScale(1/ratio, new System.Drawing.Point(0, 0));
         }
         private void setOptimalProperties()
         {
-            
+            camManager.exposure = -9;
+            exposureSlider.Value = -9;
+            camManager.brightness = 110;
+            brightnessSlider.Value = 110;
         }
         private void zoomScaleUpdated(object sender, EventArgs arg)
         {
@@ -93,12 +102,31 @@ namespace VisionProcessing2._0
         {
             CapturedImageBox.Image = frame;
         }
-        private void ReleaseData()
+        #endregion
+        #region Camera Settings Buttons
+        private void exposureSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (camManager != null)
+            try { camManager.exposure = e.NewValue; Console.WriteLine("Exposure Slider: {0} Value set: {1}", e.NewValue, camManager.exposure); }
+            catch(NullReferenceException ex) { }
+            try
             {
-                camManager.Dispose();
+                if (camManager.exposure >= -3)
+                {
+                    Console.WriteLine("WARNING: FPS will significantly drop due to overexposure!");
+                }
             }
+            catch(NullReferenceException ex) { }
+        }
+
+        private void brightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try { camManager.brightness = e.NewValue; Console.WriteLine("Brightness Slider: {0} Value set: {1}", e.NewValue, camManager.brightness); }
+            catch (NullReferenceException ex) { }
+        }
+        private void focusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try { camManager.focus = e.NewValue; Console.WriteLine("Focus Slider: {0} Value set: {1}", e.NewValue, camManager.focus); }
+            catch (NullReferenceException ex) { }
         }
         #endregion
     }

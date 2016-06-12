@@ -24,6 +24,9 @@ namespace VisionProcessing2._0
             {
                 textBox.AppendText(value.ToString());
             }));
+            textBox.Focus();
+            textBox.CaretIndex = textBox.Text.Length;
+            textBox.ScrollToEnd();
         }
 
         public override Encoding Encoding

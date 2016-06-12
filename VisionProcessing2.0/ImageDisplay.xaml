@@ -6,22 +6,84 @@
         xmlns:local="clr-namespace:VisionProcessing2._0"
         xmlns:emui="clr-namespace:Emgu.CV.UI;assembly=Emgu.CV.UI"
         mc:Ignorable="d"
-        Title="CocoNuts Image Processing" Height="400" Width="600" SizeToContent="WidthAndHeight">
+        Title="CocoNoots Image Processing" Height="400" Width="600" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
     <Grid x:Name="grid">
+        <!-- Define rows and columns -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="column1"/>
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Name="row1"/>
-            <RowDefinition Height="70"/>
+            <RowDefinition Name="row1" Height="369" />
         </Grid.RowDefinitions>
-        <WindowsFormsHost Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <emui:ImageBox x:Name="CapturedImageBox"></emui:ImageBox>
-        </WindowsFormsHost>
-        <ScrollViewer Grid.Column="1" Grid.Row="0">
-            <TextBox x:Name="TextBoxConsole" FontFamily="Consolas"></TextBox>
-        </ScrollViewer>
-        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Camera Settings" VerticalAlignment="Top" TextDecorations="Underline"/>
+        <!-- Image section -->
+        <TabControl Grid.Column="0" Grid.Row="0" x:Name="ImageTabControl">
+            <!-- Source Image -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <!-- Add image preview eventually (if pretty) -->
+                        <TextBlock Text="Source"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas x:Name="SourceCanvas">
+                    <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <emui:ImageBox x:Name="CapturedImageBox"></emui:ImageBox>
+                    </WindowsFormsHost>
+                </Canvas>
+            </TabItem>
+            <!-- Median Image -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Median"/>
+                    </StackPanel>
+                </TabItem.Header>
+            </TabItem>
+        </TabControl>
+        <!-- Tab control for column 1 items -->
+        <TabControl Grid.Column="1" Grid.Row="0">
+            <!-- Settings -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="16" Height="16" Margin="0 0 4 0" Source="D:\Visual Studio Apps\VisionProcessing2.0\VisionProcessing2.0\assets\settings.png"/>
+                        <TextBlock Text="Settings"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas>
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="10">
+                        <Canvas Height="61" Width="130" Canvas.Left="10" Canvas.Top="10">
+                            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Exposure" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <Slider x:Name="exposureSlider" HorizontalAlignment="Center" VerticalAlignment="Top" Width="130" ValueChanged="exposureSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change exposure/shutter speed." SmallChange="1" Maximum="-2" Minimum="-9" IsSnapToTickEnabled="True" Canvas.Top="31"/>
+                        </Canvas>
+                    </Border>
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="150" Canvas.Top="10">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Brightness" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Top="10" Canvas.Left="10"/>
+                            <Slider x:Name="brightnessSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="brightnessSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change brightness." SmallChange="1" Maximum="180" Minimum="100" IsSnapToTickEnabled="True" Grid.ColumnSpan="2" TickFrequency="10" Canvas.Top="31"/>
+                        </Canvas>
+                    </Border>
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Focus" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31"/>
+                        </Canvas>
+                    </Border>
+                </Canvas>
+            </TabItem>
+            <!-- Console -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Height="16" Width="16" Margin="0 0 4 0" Source="D:\Visual Studio Apps\VisionProcessing2.0\VisionProcessing2.0\assets\console.png"/>
+                        <TextBlock Text="Console" />
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer>
+                    <TextBox x:Name="TextBoxConsole" FontFamily="Consolas" IsReadOnly="True" Background="White"></TextBox>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
