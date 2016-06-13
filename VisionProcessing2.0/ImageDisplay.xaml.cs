@@ -26,21 +26,38 @@ namespace VisionProcessing2._0
         public MainWindow()
         {
             InitializeComponent();
+            //If application starts in a debug environment, allow all tools for the ImageBox.
             #if DEBUG
             CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.Everything;
             #else
             CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.PanAndZoom;
             #endif
-            startCapture();
             timerSetup();
+            console();
+            startCapture();
         }
         DispatcherTimer timer;
+        DispatcherTimer timerGC;
+        /// <summary>
+        /// Initializes a timer that runs off the system clock, and on each interval (1/30 of a second) run ProcessFrame method.
+        /// </summary>
         private void timerSetup()
         {
+            timerGC = new DispatcherTimer();
+            timerGC.Tick += TimerGC_Tick;
+            timerGC.Interval = new TimeSpan(0, 0, 5);
+            timerGC.Start();
             timer = new DispatcherTimer();
+            //Defines the method to run when the interval is met.
             timer.Tick += new EventHandler(ProcessFrame);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 33);
+            //Defines the interval as 1/30 of a second, which allows for 30 fps.
+            timer.Interval = new TimeSpan(0, 0, 0, 1/30, 0);
             timer.Start();
+        }
+
+        private void TimerGC_Tick(object sender, EventArgs e)
+        {
+            GC.Collect();
         }
         #region Display Image
         private CameraManagement camManager = null;
@@ -48,11 +65,14 @@ namespace VisionProcessing2._0
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
         /// </summary>
-        private void startCapture()
+        private void console()
         {
             textBoxOutput = new TextBoxOutputter(TextBoxConsole);
             Console.SetOut(textBoxOutput);
             Console.WriteLine("Initialized custom console output. Enjoy!");
+        }
+        private void startCapture()
+        {
             //Disable OpenCL rendering and catch exceptions if CvInvoke.dll isn't found.
             try { CvInvoke.UseOpenCL = false; }
             catch (TypeInitializationException ex) { MessageBox.Show(
@@ -64,10 +84,10 @@ namespace VisionProcessing2._0
             catch (NullReferenceException ex) { MessageBox.Show("Camera Manager could not be instantiated.\nBEGIN MESSAGE\n============\n" + ex.Message); }
             setDimensions();
             setOptimalProperties();
-            timerSetup();
         }
         private void setDimensions()
         {
+            //Defines a ratio. > 1 reduces the total size, < 1 enlarges.
             int ratio = 2;
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
@@ -77,6 +97,7 @@ namespace VisionProcessing2._0
             Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Height / ratio);
             SourceCanvas.Width = frame.Width / ratio;
             SourceCanvas.Height = frame.Height / ratio;
+            TextBoxConsole.MaxHeight = frame.Height / ratio;
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
             CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
             CapturedImageBox.SetZoomScale(1/ratio, new System.Drawing.Point(0, 0));
@@ -129,5 +150,12 @@ namespace VisionProcessing2._0
             catch (NullReferenceException ex) { }
         }
         #endregion
+
+        private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(ImageTabControlSource != null && ImageTabControlSource.IsSelected)
+            {
+            }
+        }
     }
 }

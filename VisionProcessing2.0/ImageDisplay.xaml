@@ -14,12 +14,12 @@
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Name="row1" Height="369" />
+            <RowDefinition Name="row1"/>
         </Grid.RowDefinitions>
         <!-- Image section -->
-        <TabControl Grid.Column="0" Grid.Row="0" x:Name="ImageTabControl">
+        <TabControl Grid.Column="0" Grid.Row="0" x:Name="ImageTabControl" SelectionChanged="ImageTabControl_SelectionChanged">
             <!-- Source Image -->
-            <TabItem>
+            <TabItem x:Name="ImageTabControlSource">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <!-- Add image preview eventually (if pretty) -->
@@ -33,12 +33,13 @@
                 </Canvas>
             </TabItem>
             <!-- Median Image -->
-            <TabItem>
+            <TabItem x:Name="ImageTabControlMedian">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Median"/>
                     </StackPanel>
                 </TabItem.Header>
+                <emui:ImageBox x:Name="MedianImageBox"></emui:ImageBox>
             </TabItem>
         </TabControl>
         <!-- Tab control for column 1 items -->
@@ -80,9 +81,7 @@
                         <TextBlock Text="Console" />
                     </StackPanel>
                 </TabItem.Header>
-                <ScrollViewer>
-                    <TextBox x:Name="TextBoxConsole" FontFamily="Consolas" IsReadOnly="True" Background="White"></TextBox>
-                </ScrollViewer>
+                <TextBox x:Name="TextBoxConsole" FontFamily="Consolas" IsReadOnly="True" Background="White"></TextBox>
             </TabItem>
         </TabControl>
     </Grid>
