@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using Emgu.CV;
 using Emgu.CV.UI;
 using System.Windows.Threading;
+using Emgu.CV.Structure;
+using Emgu.CV.CvEnum;
 
 namespace VisionProcessing2._0
 {
@@ -39,17 +41,17 @@ namespace VisionProcessing2._0
         DispatcherTimer timer;
         DispatcherTimer timerGC;
         /// <summary>
-        /// Initializes a timer that runs off the system clock, and on each interval (1/30 of a second) run ProcessFrame method.
+        /// Initializes a timer that runs off the system clock, and on each interval (1/30 of a second) run ProcessSource method.
         /// </summary>
         private void timerSetup()
         {
             timerGC = new DispatcherTimer();
             timerGC.Tick += TimerGC_Tick;
-            timerGC.Interval = new TimeSpan(0, 0, 5);
+            timerGC.Interval = new TimeSpan(0, 0, 1);
             timerGC.Start();
             timer = new DispatcherTimer();
             //Defines the method to run when the interval is met.
-            timer.Tick += new EventHandler(ProcessFrame);
+            timer.Tick += new EventHandler(ProcessSource);
             //Defines the interval as 1/30 of a second, which allows for 30 fps.
             timer.Interval = new TimeSpan(0, 0, 0, 1/30, 0);
             timer.Start();
@@ -73,7 +75,7 @@ namespace VisionProcessing2._0
         }
         private void startCapture()
         {
-            //Disable OpenCL rendering and catch exceptions if CvInvoke.dll isn't found.
+            //Disable OpenCL processing and catch exceptions if CvInvoke.dll isn't found.
             try { CvInvoke.UseOpenCL = false; }
             catch (TypeInitializationException ex) { MessageBox.Show(
                 "An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
@@ -85,18 +87,29 @@ namespace VisionProcessing2._0
             setDimensions();
             setOptimalProperties();
         }
+        int ratio;
+        int height;
+        int width;
         private void setDimensions()
         {
             //Defines a ratio. > 1 reduces the total size, < 1 enlarges.
-            int ratio = 2;
+            ratio = 2;
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
             CapturedImageBox.Width = frame.Width / ratio;
             CapturedImageBox.Height = frame.Height / ratio;
+            MedianImageBox.Width = frame.Width / ratio;
+            MedianImageBox.Height = frame.Height / ratio;
+            height = frame.Height / ratio;
+            width = frame.Width / ratio;
             Console.WriteLine("Width of frame: {0} Width of ImageBox: {1} Final width: {2}", frame.Width, CapturedImageBox.Width, frame.Width / ratio);
             Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Height / ratio);
             SourceCanvas.Width = frame.Width / ratio;
             SourceCanvas.Height = frame.Height / ratio;
+            SourceCanvas.MaxHeight = frame.Width / ratio;
+            SourceCanvas.MaxWidth = frame.Width / ratio;
+            MedianCanvas.Width = frame.Width / ratio;
+            MedianCanvas.Height = frame.Height / ratio;
             TextBoxConsole.MaxHeight = frame.Height / ratio;
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
             CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
@@ -113,11 +126,32 @@ namespace VisionProcessing2._0
         {
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
         }
-        private void ProcessFrame(object sender, EventArgs arg)
+        private void ProcessSource(object sender, EventArgs arg)
         {
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
             sendFrame(frame);
+            ProcessMedian(frame);
+        }
+        private void ProcessMedian(Mat frame)
+        {
+            using (Image<Rgba, Byte> frameImage = frame.ToImage<Rgba, Byte>())
+            {
+                //Converts the mat object to an image.
+                //Image<Hsv, Byte> hsvFrameImage = frameImage.Convert<Hsv, Byte>();
+                Image<Hsv, Byte> rgbFrame = frameImage.Convert<Hsv, Byte>();
+                CvInvoke.MedianBlur(rgbFrame, rgbFrame, 15);
+                MedianImageBox.Image = rgbFrame;
+            }
+        }
+        private void ProcessHSV()
+        {
+            //CvInvoke.CvtColor(frame, HSVFrame, ColorConversion.Bgr2Hsv);
+            //Image<Hsv, byte> imageHSVFrame = HSVFrame.ToImage<Hsv, byte>();
+            //imageHSVFrame.ThresholdToZero(lower);
+            //imageHSVFrame.ThresholdToZeroInv(upper);
+            //Image<Gray, byte> filteredImageHSV = imageHSVFrame.InRange(lower, upper);
+            //hsvImageBox.Image = filteredImageHSV;
         }
         private void sendFrame(Mat frame)
         {
@@ -153,8 +187,16 @@ namespace VisionProcessing2._0
 
         private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(ImageTabControlSource != null && ImageTabControlSource.IsSelected)
+            TabItem currentTab = ImageTabControl.SelectedItem as TabItem;
+            if(currentTab == ImageTabControlSource)
             {
+                CapturedImageBox.Width = width;
+                CapturedImageBox.Height = height;
+            }
+            else if(currentTab == ImageTabControlMedian)
+            {
+                MedianImageBox.Width = width;
+                MedianImageBox.Height = height;
             }
         }
     }

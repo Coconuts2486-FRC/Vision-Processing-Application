@@ -39,7 +39,11 @@
                         <TextBlock Text="Median"/>
                     </StackPanel>
                 </TabItem.Header>
-                <emui:ImageBox x:Name="MedianImageBox"></emui:ImageBox>
+                <Canvas x:Name="MedianCanvas">
+                    <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <emui:ImageBox x:Name="MedianImageBox"></emui:ImageBox>
+                    </WindowsFormsHost>
+                </Canvas>
             </TabItem>
         </TabControl>
         <!-- Tab control for column 1 items -->
@@ -68,7 +72,7 @@
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80">
                         <Canvas Height="61" Width="130">
                             <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Focus" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
-                            <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31"/>
+                            <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
                         </Canvas>
                     </Border>
                 </Canvas>
