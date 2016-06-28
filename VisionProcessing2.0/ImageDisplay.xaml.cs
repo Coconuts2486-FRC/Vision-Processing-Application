@@ -16,7 +16,6 @@ using Emgu.CV;
 using Emgu.CV.UI;
 using System.Windows.Threading;
 using Emgu.CV.Structure;
-using Emgu.CV.CvEnum;
 
 namespace VisionProcessing2._0
 {
@@ -29,15 +28,36 @@ namespace VisionProcessing2._0
         {
             InitializeComponent();
             //If application starts in a debug environment, allow all tools for the ImageBox.
-            #if DEBUG
-            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.Everything;
-            #else
-            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.PanAndZoom;
-            #endif
+            //Note: Disabled for now. I like the FPS viewer and histogram.
+//            #if DEBUG
+//            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.Everything;
+//#else
+//            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.PanAndZoom;
+//#endif
+            getAvailableCameras();
             timerSetup();
             console();
             startCapture();
         }
+
+        private void getAvailableCameras()
+        {
+            //Implement later! Requires DirectShow.net library
+
+            //DsDevice[] _SystemCamereas = DsDevice.GetDevicesOfCat(FilterCategory.VideoInputDevice);
+            //WebCams = new Video_Device[_SystemCamereas.Length];
+            //for (int i = 0; i < _SystemCamereas.Length; i++)
+            //{
+            //    WebCams[i] = new Video_Device(i, _SystemCamereas[i].Name, _SystemCamereas[i].ClassID); //fill web cam array
+            //    Camera_Selection.Items.Add(WebCams[i].ToString());
+            //}
+            //if (Camera_Selection.Items.Count > 0)
+            //{
+            //    Camera_Selection.SelectedIndex = 0; //Set the selected device the default
+            //    captureButton.Enabled = true; //Enable the start
+            //}
+        }
+
         DispatcherTimer timer;
         DispatcherTimer timerGC;
         /// <summary>
@@ -77,9 +97,11 @@ namespace VisionProcessing2._0
         {
             //Disable OpenCL processing and catch exceptions if CvInvoke.dll isn't found.
             try { CvInvoke.UseOpenCL = false; }
-            catch (TypeInitializationException ex) { MessageBox.Show(
-                "An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
-                + "\nBEGIN MESSAGE \n ================\n" + ex.Message); }
+            catch (TypeInitializationException ex)
+            {
+                MessageBox.Show("An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
+                + "\nBEGIN MESSAGE \n ================\n" + ex.Message);
+            }
 
             //Create a new capture and attach an event to it.
             try { camManager = new CameraManagement(); }
@@ -128,20 +150,21 @@ namespace VisionProcessing2._0
         }
         private void ProcessSource(object sender, EventArgs arg)
         {
+            //Forces the renderer to invalidate the screen, which then forces a redraw, and then in turn increases the camera FPS. Programming.
+            InvalidateVisual();
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
             sendFrame(frame);
             ProcessMedian(frame);
         }
+        private int medianTolerance = 1;
         private void ProcessMedian(Mat frame)
         {
             using (Image<Rgba, Byte> frameImage = frame.ToImage<Rgba, Byte>())
             {
-                //Converts the mat object to an image.
-                //Image<Hsv, Byte> hsvFrameImage = frameImage.Convert<Hsv, Byte>();
                 Image<Hsv, Byte> rgbFrame = frameImage.Convert<Hsv, Byte>();
-                CvInvoke.MedianBlur(rgbFrame, rgbFrame, 15);
-                MedianImageBox.Image = rgbFrame;
+                CvInvoke.MedianBlur(frame, frame, medianTolerance);
+                MedianImageBox.Image = frame;
             }
         }
         private void ProcessHSV()
@@ -162,7 +185,7 @@ namespace VisionProcessing2._0
         private void exposureSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             try { camManager.exposure = e.NewValue; Console.WriteLine("Exposure Slider: {0} Value set: {1}", e.NewValue, camManager.exposure); }
-            catch(NullReferenceException ex) { }
+            catch(NullReferenceException) {  }
             try
             {
                 if (camManager.exposure >= -3)
@@ -170,34 +193,55 @@ namespace VisionProcessing2._0
                     Console.WriteLine("WARNING: FPS will significantly drop due to overexposure!");
                 }
             }
-            catch(NullReferenceException ex) { }
+            catch(NullReferenceException) { }
         }
 
         private void brightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             try { camManager.brightness = e.NewValue; Console.WriteLine("Brightness Slider: {0} Value set: {1}", e.NewValue, camManager.brightness); }
-            catch (NullReferenceException ex) { }
+            catch (NullReferenceException) { }
         }
         private void focusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             try { camManager.focus = e.NewValue; Console.WriteLine("Focus Slider: {0} Value set: {1}", e.NewValue, camManager.focus); }
-            catch (NullReferenceException ex) { }
+            catch (NullReferenceException) { }
+        }
+        private void medianSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(medianTolerance % 2 == 1)
+            {
+                medianTolerance = (int)e.NewValue;
+                Console.WriteLine("Median Slider: {0} Value set: {1}", e.NewValue, medianTolerance);
+            }
+            else
+            {
+                Console.WriteLine("Median Slider: {0} Value set: {1}", e.NewValue, medianTolerance);
+            }
         }
         #endregion
-
         private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TabItem currentTab = ImageTabControl.SelectedItem as TabItem;
             if(currentTab == ImageTabControlSource)
             {
                 CapturedImageBox.Width = width;
+                SourceCanvas.MaxWidth = width;
                 CapturedImageBox.Height = height;
+                SourceCanvas.MaxHeight = height;
             }
             else if(currentTab == ImageTabControlMedian)
             {
                 MedianImageBox.Width = width;
+                MedianCanvas.MaxWidth = width;
                 MedianImageBox.Height = height;
+                MedianCanvas.MaxHeight = height;
+            }
+            else if(currentTab == ImageTabControlHSV)
+            {
+                HSVImageCanvas.Width = width;
+                HSVImageCanvas.Height = height;
             }
         }
+
     }
 }

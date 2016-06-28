@@ -45,6 +45,19 @@
                     </WindowsFormsHost>
                 </Canvas>
             </TabItem>
+            <!-- HSV Threshold -->
+            <TabItem x:Name="ImageTabControlHSV">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="HSV" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Canvas x:Name="HSVImageCanvas">
+                    <WindowsFormsHost>
+                        <emui:ImageBox x:Name="HSVImageBox" />
+                    </WindowsFormsHost>
+                </Canvas>
+            </TabItem>
         </TabControl>
         <!-- Tab control for column 1 items -->
         <TabControl Grid.Column="1" Grid.Row="0">
@@ -52,27 +65,37 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <Image Width="16" Height="16" Margin="0 0 4 0" Source="D:\Visual Studio Apps\VisionProcessing2.0\VisionProcessing2.0\assets\settings.png"/>
+                        <Image Width="16" Height="16" Margin="0 0 4 0" Source="assets/settings.png"/>
                         <TextBlock Text="Settings"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Canvas>
+                    <!-- Exposure -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="10">
                         <Canvas Height="61" Width="130" Canvas.Left="10" Canvas.Top="10">
                             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Exposure" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
                             <Slider x:Name="exposureSlider" HorizontalAlignment="Center" VerticalAlignment="Top" Width="130" ValueChanged="exposureSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change exposure/shutter speed." SmallChange="1" Maximum="-2" Minimum="-9" IsSnapToTickEnabled="True" Canvas.Top="31"/>
                         </Canvas>
                     </Border>
+                    <!-- Brightness -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="150" Canvas.Top="10">
                         <Canvas Height="61" Width="130">
                             <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Brightness" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Top="10" Canvas.Left="10"/>
                             <Slider x:Name="brightnessSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="brightnessSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change brightness." SmallChange="1" Maximum="180" Minimum="100" IsSnapToTickEnabled="True" Grid.ColumnSpan="2" TickFrequency="10" Canvas.Top="31"/>
                         </Canvas>
                     </Border>
+                    <!-- Focus -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80">
                         <Canvas Height="61" Width="130">
                             <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Focus" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
                             <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
+                        </Canvas>
+                    </Border>
+                    <!-- Hue -->
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="150" Canvas.Top="80">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Median Tolerance" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <Slider x:Name="medianSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="medianSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change median filter tolerance." SmallChange="2" Maximum="31" IsSnapToTickEnabled="True" TickFrequency="2" Grid.Column="1" Canvas.Top="31" Minimum="1"/>
                         </Canvas>
                     </Border>
                 </Canvas>
@@ -81,11 +104,11 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <Image Height="16" Width="16" Margin="0 0 4 0" Source="D:\Visual Studio Apps\VisionProcessing2.0\VisionProcessing2.0\assets\console.png"/>
+                        <Image Height="16" Width="16" Margin="0 0 4 0" Source="assets/console.png"/>
                         <TextBlock Text="Console" />
                     </StackPanel>
                 </TabItem.Header>
-                <TextBox x:Name="TextBoxConsole" FontFamily="Consolas" IsReadOnly="True" Background="White"></TextBox>
+                <TextBox x:Name="TextBoxConsole" FontFamily="Consolas" IsReadOnly="True" Background="White" />
             </TabItem>
         </TabControl>
     </Grid>

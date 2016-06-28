@@ -83,6 +83,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CameraManagement.cs" />
+    <Compile Include="HSVFilter.cs" />
     <Compile Include="TextBoxOutputter.cs" />
     <Page Include="ImageDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -138,6 +139,10 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="pingu.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="assets\console.png" />
+    <Resource Include="assets\settings.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
