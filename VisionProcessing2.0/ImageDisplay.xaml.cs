@@ -16,6 +16,7 @@ using Emgu.CV;
 using Emgu.CV.UI;
 using System.Windows.Threading;
 using Emgu.CV.Structure;
+using Emgu.CV.CvEnum;
 
 namespace VisionProcessing2._0
 {
@@ -148,37 +149,27 @@ namespace VisionProcessing2._0
         {
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
         }
+        Mat frame;
         private void ProcessSource(object sender, EventArgs arg)
         {
             //Forces the renderer to invalidate the screen, which then forces a redraw, and then in turn increases the camera FPS. Programming.
             InvalidateVisual();
-            Mat frame = new Mat();
+            frame = new Mat();
             camManager.Retrieve(frame, 0);
-            sendFrame(frame);
+            CapturedImageBox.Image = frame;
             ProcessMedian(frame);
         }
-        private int medianTolerance = 1;
+        int medianTolerance = 1;
         private void ProcessMedian(Mat frame)
         {
-            using (Image<Rgba, Byte> frameImage = frame.ToImage<Rgba, Byte>())
-            {
-                Image<Hsv, Byte> rgbFrame = frameImage.Convert<Hsv, Byte>();
-                CvInvoke.MedianBlur(frame, frame, medianTolerance);
-                MedianImageBox.Image = frame;
-            }
+            Mat filtered = new Mat();
+            CvInvoke.MedianBlur(frame, filtered, medianTolerance);
+            MedianImageBox.Image = filtered;
+            ProcessHSV(filtered);
         }
-        private void ProcessHSV()
+        private void ProcessHSV(Mat frame)
         {
-            //CvInvoke.CvtColor(frame, HSVFrame, ColorConversion.Bgr2Hsv);
-            //Image<Hsv, byte> imageHSVFrame = HSVFrame.ToImage<Hsv, byte>();
-            //imageHSVFrame.ThresholdToZero(lower);
-            //imageHSVFrame.ThresholdToZeroInv(upper);
-            //Image<Gray, byte> filteredImageHSV = imageHSVFrame.InRange(lower, upper);
-            //hsvImageBox.Image = filteredImageHSV;
-        }
-        private void sendFrame(Mat frame)
-        {
-            CapturedImageBox.Image = frame;
+            HSVImageBox.Image = frame;
         }
         #endregion
         #region Camera Settings Buttons
@@ -238,7 +229,9 @@ namespace VisionProcessing2._0
             }
             else if(currentTab == ImageTabControlHSV)
             {
+                HSVImageBox.Width = width;
                 HSVImageCanvas.Width = width;
+                HSVImageBox.Height = height;
                 HSVImageCanvas.Height = height;
             }
         }
