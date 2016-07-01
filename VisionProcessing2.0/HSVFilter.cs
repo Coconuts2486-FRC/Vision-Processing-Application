@@ -9,6 +9,7 @@ namespace VisionProcessing2._0
 {
     class HSVFilter
     {
+        #region Local and public variables
         /// <summary>
         /// Provides the context for what value to change.
         /// </summary>
@@ -21,7 +22,7 @@ namespace VisionProcessing2._0
             lowerValue,
             upperValue
         }
-
+        
         public Hsv lowerFilter;
         public Hsv upperFilter;
 
@@ -31,7 +32,11 @@ namespace VisionProcessing2._0
         private int upperSaturation;
         private int lowerValue;
         private int upperValue;
-
+        #endregion
+        #region Constructors
+        /// <summary>
+        /// Uses default values (0-180, 0-255, 0-255).
+        /// </summary>
         public HSVFilter()
         {
             lowerHue = 0;
@@ -42,6 +47,18 @@ namespace VisionProcessing2._0
             upperValue = 255;
             update();
         }
+        /// <summary>
+        /// Supply custom filters.
+        /// </summary>
+        /// <param name="lowerFilter"></param>
+        /// <param name="upperFilter"></param>
+        public HSVFilter(Hsv lowerFilter, Hsv upperFilter)
+        {
+            this.lowerFilter = lowerFilter;
+            this.upperFilter = upperFilter;
+        }
+        #endregion
+        #region Set values
         /// <summary>
         /// Modifies the range of values.
         /// Hue is 180 degrees, while saturation and value are 255.
@@ -80,13 +97,15 @@ namespace VisionProcessing2._0
             lowerFilter = new Hsv(lowerHue, lowerSaturation, lowerValue);
             upperFilter = new Hsv(upperHue, upperSaturation, upperValue);
         }
+        #endregion
+        
         /// <summary>
         /// Formats the range.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            return "Range updated. \nHue: " + lowerHue + "-" + upperHue + "\nSaturation: " + lowerSaturation + "-"+ upperSaturation + "\nValue: " + lowerValue + "-" + upperValue;
+            return "Printout of current range. \nHue: " + lowerHue + "-" + upperHue + "\nSaturation: " + lowerSaturation + "-"+ upperSaturation + "\nValue: " + lowerValue + "-" + upperValue;
         }
     }
 }

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VisionProcessing2._0"
         xmlns:emui="clr-namespace:Emgu.CV.UI;assembly=Emgu.CV.UI"
+        xmlns:xwpf="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="CocoNoots Image Processing" Height="400" Width="600" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
     <Grid x:Name="grid">
@@ -53,7 +54,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <Canvas x:Name="HSVImageCanvas">
-                    <WindowsFormsHost>
+                    <WindowsFormsHost x:Name="HSVHost">
                         <emui:ImageBox x:Name="HSVImageBox"/>
                     </WindowsFormsHost>
                 </Canvas>
@@ -91,7 +92,7 @@
                             <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
                         </Canvas>
                     </Border>
-                    <!-- Hue -->
+                    <!-- Median Tolerance -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="150" Canvas.Top="80">
                         <Canvas Height="61" Width="130">
                             <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Median Tolerance" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
@@ -108,14 +109,35 @@
                         <TextBlock Text="Filtering"></TextBlock>
                     </StackPanel>
                 </TabItem.Header>
-                <!-- Implement in the future!
-                <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80">
-                    <Canvas Height="61" Width="130">
-                        <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Focus" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
-                        <Slider x:Name="focusSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" ValueChanged="focusSlider_ValueChanged" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
-                    </Canvas>
-                </Border>
-                -->
+                <Canvas>
+                    <!-- Hue -->
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="10">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Hue" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <xwpf:RangeSlider x:Name="hueSlider"
+                                              Width="130"
+                                              Minimum="0"
+                                              Maximum="180"
+                                              Canvas.Top="31"
+                                              HigherValueChanged="hueSlider_HigherValueChanged"
+                                              LowerValueChanged="hueSlider_LowerValueChanged"/>
+                        </Canvas>
+                    </Border>
+                    <!-- Saturation -->
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="150" Canvas.Top="10">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <Slider x:Name="saturationSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
+                        </Canvas>
+                    </Border>
+                    <!-- Value -->
+                    <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80">
+                        <Canvas Height="61" Width="130">
+                            <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
+                            <Slider x:Name="valueSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
+                        </Canvas>
+                    </Border>
+                </Canvas>
             </TabItem>
             <!-- Console -->
             <TabItem>

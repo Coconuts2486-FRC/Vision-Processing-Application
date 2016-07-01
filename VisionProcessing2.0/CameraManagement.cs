@@ -13,11 +13,12 @@ namespace VisionProcessing2._0
         {
             setInitialSettings();
         }
-        #region Camera Properties
+        #region Local Variables
         private double cBrightness;
         private double cExposure;
         private double cFocus;
         private double cFPS;
+        #endregion
         private void setInitialSettings()
         {
             cBrightness = brightness;
@@ -25,6 +26,7 @@ namespace VisionProcessing2._0
             cFocus = focus;
             cFPS = fps;
         }
+        #region Getters and setters
         public double brightness
         {
             get { return GetCaptureProperty(Emgu.CV.CvEnum.CapProp.Brightness); }

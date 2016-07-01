@@ -28,13 +28,6 @@ namespace VisionProcessing2._0
         public MainWindow()
         {
             InitializeComponent();
-            //If application starts in a debug environment, allow all tools for the ImageBox.
-            //Note: Disabled for now. I like the FPS viewer and histogram.
-//            #if DEBUG
-//            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.Everything;
-//#else
-//            CapturedImageBox.FunctionalMode = ImageBox.FunctionalModeOption.PanAndZoom;
-//#endif
             getAvailableCameras();
             timerSetup();
             console();
@@ -119,24 +112,36 @@ namespace VisionProcessing2._0
             ratio = 2;
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
-            CapturedImageBox.Width = frame.Width / ratio;
-            CapturedImageBox.Height = frame.Height / ratio;
-            MedianImageBox.Width = frame.Width / ratio;
-            MedianImageBox.Height = frame.Height / ratio;
+            int ratioWidth = frame.Width / ratio;
+            int ratioHeight = frame.Height / ratio;
+            CapturedImageBox.Width = ratioWidth;
+            CapturedImageBox.Height = ratioHeight;
+            MedianImageBox.Width = ratioWidth;
+            MedianImageBox.Height = ratioHeight;
+            HSVImageBox.Width = ratioWidth;
+            HSVImageBox.Height = ratioHeight;
             height = frame.Height / ratio;
             width = frame.Width / ratio;
             Console.WriteLine("Width of frame: {0} Width of ImageBox: {1} Final width: {2}", frame.Width, CapturedImageBox.Width, frame.Width / ratio);
             Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Height / ratio);
-            SourceCanvas.Width = frame.Width / ratio;
-            SourceCanvas.Height = frame.Height / ratio;
-            SourceCanvas.MaxHeight = frame.Width / ratio;
-            SourceCanvas.MaxWidth = frame.Width / ratio;
-            MedianCanvas.Width = frame.Width / ratio;
-            MedianCanvas.Height = frame.Height / ratio;
-            TextBoxConsole.MaxHeight = frame.Height / ratio;
+            SourceCanvas.Width = width;
+            SourceCanvas.Height = height;
+            SourceCanvas.MaxHeight = height;
+            SourceCanvas.MaxWidth = width;
+            MedianCanvas.Width = width;
+            MedianCanvas.Height = height;
+            MedianCanvas.MaxHeight = height;
+            MedianCanvas.MaxWidth = width;
+            HSVImageCanvas.Width = width;
+            HSVImageCanvas.Height = height;
+            HSVImageCanvas.MaxHeight = height;
+            HSVImageCanvas.MaxWidth = width;
+            TextBoxConsole.MaxHeight = height;
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
             CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
-            CapturedImageBox.SetZoomScale(1/ratio, new System.Drawing.Point(0, 0));
+            CapturedImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
+            MedianImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
+            HSVImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
         }
         private void setOptimalProperties()
         {
@@ -167,6 +172,7 @@ namespace VisionProcessing2._0
             MedianImageBox.Image = filtered;
             ProcessHSV(filtered);
         }
+        HSVFilter hsvFilter = new HSVFilter();
         private void ProcessHSV(Mat frame)
         {
             HSVImageBox.Image = frame;
@@ -210,11 +216,13 @@ namespace VisionProcessing2._0
             }
         }
         #endregion
+        private int selectionCount;
         private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TabItem currentTab = ImageTabControl.SelectedItem as TabItem;
             if(currentTab == ImageTabControlSource)
             {
+                Console.WriteLine("Source tab selected.");
                 CapturedImageBox.Width = width;
                 SourceCanvas.MaxWidth = width;
                 CapturedImageBox.Height = height;
@@ -222,6 +230,7 @@ namespace VisionProcessing2._0
             }
             else if(currentTab == ImageTabControlMedian)
             {
+                Console.WriteLine("Median tab selected.");
                 MedianImageBox.Width = width;
                 MedianCanvas.MaxWidth = width;
                 MedianImageBox.Height = height;
@@ -229,12 +238,26 @@ namespace VisionProcessing2._0
             }
             else if(currentTab == ImageTabControlHSV)
             {
+                selectionCount++;
+                if (selectionCount >= 2)
+                {
+                    Canvas.SetTop(HSVHost, -120);
+                    Canvas.SetLeft(HSVHost, -160);
+                }
+                Console.WriteLine("HSV tab selected. Count: {0}", selectionCount);
                 HSVImageBox.Width = width;
                 HSVImageCanvas.Width = width;
                 HSVImageBox.Height = height;
                 HSVImageCanvas.Height = height;
             }
         }
-
+        private void hueSlider_LowerValueChanged(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Upper hue changed!");
+        }
+        private void hueSlider_HigherValueChanged(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Lower hue changed!");
+        }
     }
 }
