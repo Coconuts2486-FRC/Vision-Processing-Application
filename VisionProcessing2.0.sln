@@ -1,20 +1,42 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisionProcessing2.0", "VisionProcessing2.0\VisionProcessing2.0.csproj", "{1881B420-CF0B-422C-B8ED-0487801E37F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		x64|Any CPU = x64|Any CPU
+		x64|x64 = x64|x64
+		x64|x86 = x64|x86
+		x86|Any CPU = x86|Any CPU
+		x86|x64 = x86|x64
+		x86|x86 = x86|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|x64.ActiveCfg = Debug|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|x64.Build.0 = Debug|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|x86.ActiveCfg = Debug|x86
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.Debug|x86.Build.0 = Debug|x86
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|Any CPU.ActiveCfg = Release|Any CPU
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|Any CPU.Build.0 = Release|Any CPU
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|x64.ActiveCfg = Release|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|x64.Build.0 = Release|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|x86.ActiveCfg = Release|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x64|x86.Build.0 = Release|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|Any CPU.ActiveCfg = x86|Any CPU
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|Any CPU.Build.0 = x86|Any CPU
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|x64.ActiveCfg = x86|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|x64.Build.0 = x86|x64
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|x86.ActiveCfg = x86|x86
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|x86.Build.0 = x86|x86
+		{1881B420-CF0B-422C-B8ED-0487801E37F8}.x86|x86.Deploy.0 = x86|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

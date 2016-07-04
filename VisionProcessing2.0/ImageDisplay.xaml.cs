@@ -23,15 +23,17 @@ namespace VisionProcessing2._0
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
+            cooldownSetup();
             InitializeComponent();
             getAvailableCameras();
             timerSetup();
             console();
             startCapture();
+            hueTextBlock.DataContext = hsvFilter;
         }
 
         private void getAvailableCameras()
@@ -54,6 +56,7 @@ namespace VisionProcessing2._0
 
         DispatcherTimer timer;
         DispatcherTimer timerGC;
+        DispatcherTimer coolDown;
         /// <summary>
         /// Initializes a timer that runs off the system clock, and on each interval (1/30 of a second) run ProcessSource method.
         /// </summary>
@@ -69,6 +72,17 @@ namespace VisionProcessing2._0
             //Defines the interval as 1/30 of a second, which allows for 30 fps.
             timer.Interval = new TimeSpan(0, 0, 0, 1/30, 0);
             timer.Start();
+        }
+        private void cooldownSetup()
+        {
+            coolDown = new DispatcherTimer();
+            coolDown.Tick += CoolDown_Tick;
+            coolDown.Interval = new TimeSpan(0, 0, 0, 0, 20);
+        }
+        private void CoolDown_Tick(object sender, EventArgs e)
+        {
+            coolDown.Stop();
+            Console.WriteLine("Cooldown met.");
         }
 
         private void TimerGC_Tick(object sender, EventArgs e)
@@ -139,9 +153,9 @@ namespace VisionProcessing2._0
             TextBoxConsole.MaxHeight = height;
             Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
             CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
-            CapturedImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
-            MedianImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
-            HSVImageBox.SetZoomScale(0.5d, new System.Drawing.Point(0, 0));
+            CapturedImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
         }
         private void setOptimalProperties()
         {
@@ -157,7 +171,7 @@ namespace VisionProcessing2._0
         Mat frame;
         private void ProcessSource(object sender, EventArgs arg)
         {
-            //Forces the renderer to invalidate the screen, which then forces a redraw, and then in turn increases the camera FPS. Programming.
+            //Forces the renderer to invalidate the screen, which then forces a redraw of the image, and then in turn increases the visual FPS. Programming.
             InvalidateVisual();
             frame = new Mat();
             camManager.Retrieve(frame, 0);
@@ -216,9 +230,12 @@ namespace VisionProcessing2._0
             }
         }
         #endregion
-        private int selectionCount;
+        private int selectionCountHSV;
         private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            CapturedImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             TabItem currentTab = ImageTabControl.SelectedItem as TabItem;
             if(currentTab == ImageTabControlSource)
             {
@@ -238,26 +255,50 @@ namespace VisionProcessing2._0
             }
             else if(currentTab == ImageTabControlHSV)
             {
-                selectionCount++;
-                if (selectionCount >= 2)
+                selectionCountHSV++;
+                if (selectionCountHSV >= 2)
                 {
                     Canvas.SetTop(HSVHost, -120);
                     Canvas.SetLeft(HSVHost, -160);
                 }
-                Console.WriteLine("HSV tab selected. Count: {0}", selectionCount);
+                Console.WriteLine("HSV tab selected. Count: {0}", selectionCountHSV);
                 HSVImageBox.Width = width;
                 HSVImageCanvas.Width = width;
                 HSVImageBox.Height = height;
                 HSVImageCanvas.Height = height;
             }
         }
-        private void hueSlider_LowerValueChanged(object sender, RoutedEventArgs e)
+        private void hueSlider_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
         {
-            Console.WriteLine("Upper hue changed!");
+            if(!coolDown.IsEnabled)
+            {
+                hsvFilter.setValue((int)e.NewValue, HSVFilter.Context.lowerHue);
+                Console.WriteLine(hsvFilter.ToString());
+                coolDown.Start();
+            }
+#if DEBUG
+            else
+            {
+                Console.WriteLine("Blocked.");
+            }
+#endif
+            
         }
-        private void hueSlider_HigherValueChanged(object sender, RoutedEventArgs e)
+        private void hueSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
         {
-            Console.WriteLine("Lower hue changed!");
+            if (!coolDown.IsEnabled)
+            {
+                hsvFilter.setValue((int)e.NewValue, HSVFilter.Context.upperHue);
+                Console.WriteLine(hsvFilter.ToString());
+                Console.WriteLine("Starting!");
+                coolDown.Start();
+            }
+#if DEBUG
+            else
+            {
+                Console.WriteLine("Blocked.");
+            }
+#endif
         }
     }
 }

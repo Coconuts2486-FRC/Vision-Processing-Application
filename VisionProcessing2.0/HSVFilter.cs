@@ -26,12 +26,12 @@ namespace VisionProcessing2._0
         public Hsv lowerFilter;
         public Hsv upperFilter;
 
-        private int lowerHue;
-        private int upperHue;
-        private int lowerSaturation;
-        private int upperSaturation;
-        private int lowerValue;
-        private int upperValue;
+        public int lowerHue { get; private set; }
+        public int upperHue { get; private set; }
+        public int lowerSaturation { get; private set; }
+        public int upperSaturation { get; private set; }
+        public int lowerValue { get; private set; }
+        public int upperValue { get; private set; }
         #endregion
         #region Constructors
         /// <summary>
