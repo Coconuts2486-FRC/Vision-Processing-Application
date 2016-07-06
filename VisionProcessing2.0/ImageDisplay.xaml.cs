@@ -77,7 +77,7 @@ namespace VisionProcessing2._0
         {
             coolDown = new DispatcherTimer();
             coolDown.Tick += CoolDown_Tick;
-            coolDown.Interval = new TimeSpan(0, 0, 0, 0, 20);
+            coolDown.Interval = new TimeSpan(0, 0, 0, 0, 10);
         }
         private void CoolDown_Tick(object sender, EventArgs e)
         {
@@ -189,7 +189,12 @@ namespace VisionProcessing2._0
         HSVFilter hsvFilter = new HSVFilter();
         private void ProcessHSV(Mat frame)
         {
-            HSVImageBox.Image = frame;
+            using (Image<Hsv, byte> hsv = frame.ToImage<Hsv, byte>())
+            {
+                
+                HSVImageBox.Image = hsv.InRange(hsvFilter.lowerFilter, hsvFilter.upperFilter);
+            }
+                
         }
         #endregion
         #region Camera Settings Buttons
@@ -268,30 +273,22 @@ namespace VisionProcessing2._0
                 HSVImageCanvas.Height = height;
             }
         }
-        private void hueSlider_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
-        {
-            if(!coolDown.IsEnabled)
-            {
-                hsvFilter.setValue((int)e.NewValue, HSVFilter.Context.lowerHue);
-                Console.WriteLine(hsvFilter.ToString());
-                coolDown.Start();
-            }
-#if DEBUG
-            else
-            {
-                Console.WriteLine("Blocked.");
-            }
-#endif
-            
-        }
-        private void hueSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        private void updateRangeSliders()
         {
             if (!coolDown.IsEnabled)
             {
-                hsvFilter.setValue((int)e.NewValue, HSVFilter.Context.upperHue);
-                Console.WriteLine(hsvFilter.ToString());
-                Console.WriteLine("Starting!");
-                coolDown.Start();
+                try
+                {
+                    hsvFilter.setValue((int)hueSlider.LowerValue, HSVFilter.Context.lowerHue);
+                    hsvFilter.setValue((int)hueSlider.UpperValue, HSVFilter.Context.upperHue);
+                    hsvFilter.setValue((int)saturationSlider.LowerValue, HSVFilter.Context.lowerSaturation);
+                    hsvFilter.setValue((int)saturationSlider.UpperValue, HSVFilter.Context.upperSaturation);
+                    hsvFilter.setValue((int)valueSlider.LowerValue, HSVFilter.Context.lowerValue);
+                    hsvFilter.setValue((int)valueSlider.UpperValue, HSVFilter.Context.upperValue);
+                    Console.WriteLine(hsvFilter.ToString());
+                    //coolDown.Start();
+                }
+                catch (NullReferenceException) { }
             }
 #if DEBUG
             else
@@ -299,6 +296,34 @@ namespace VisionProcessing2._0
                 Console.WriteLine("Blocked.");
             }
 #endif
+        }
+        private void hueSlider_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();   
+        }
+        private void hueSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();
+        }
+
+        private void saturationSlider_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();
+        }
+
+        private void saturationSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();
+        }
+
+        private void valueSlider_LowerValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();
+        }
+
+        private void valueSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
+        {
+            updateRangeSliders();
         }
     }
 }

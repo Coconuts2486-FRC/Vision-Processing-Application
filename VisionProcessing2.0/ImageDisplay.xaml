@@ -130,21 +130,60 @@
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="10" Width="274">
                         <Canvas Height="61" Margin="-2,0">
                             <TextBlock x:Name="hueTextBlock" HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Hue" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
-                            <metro:RangeSlider x:Name="hueSlider" Width="274" Canvas.Top="31" Maximum="180" SmallChange="10" LargeChange="20" TickPlacement="BottomRight" TickFrequency="5" LowerValueChanged="hueSlider_LowerValueChanged" UpperValueChanged="hueSlider_UpperValueChanged" MinRangeWidth="1" MinRange="1" />
+                            <metro:RangeSlider x:Name="hueSlider"
+                                               Width="274"
+                                               Canvas.Top="31"
+                                               Maximum="180"
+                                               SmallChange="10"
+                                               LargeChange="20"
+                                               TickPlacement="BottomRight" 
+                                               TickFrequency="5" 
+                                               LowerValueChanged="hueSlider_LowerValueChanged"
+                                               UpperValueChanged="hueSlider_UpperValueChanged" 
+                                               MinRangeWidth="1" 
+                                               MinRange="1" 
+                                               UpperValue="180" 
+                                               ToolTip="Change hue." />
                         </Canvas>
                     </Border>
                     <!-- Saturation -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="80" Width="274">
                         <Canvas Height="61" Margin="-2,0">
                             <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Saturation" VerticalAlignment="Top" Canvas.Left="10" Canvas.Top="10"/>
-                            <Slider x:Name="saturationSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="274" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
+                            <metro:RangeSlider x:Name="saturationSlider"
+                                               Width="274"
+                                               Canvas.Top="31"
+                                               Maximum="255"
+                                               SmallChange="10"
+                                               LargeChange="20"
+                                               TickPlacement="BottomRight" 
+                                               TickFrequency="5" 
+                                               LowerValueChanged="saturationSlider_LowerValueChanged"
+                                               UpperValueChanged="saturationSlider_UpperValueChanged" 
+                                               MinRangeWidth="1" 
+                                               MinRange="1" 
+                                               UpperValue="255" 
+                                               ToolTip="Change saturation." />
                         </Canvas>
                     </Border>
                     <!-- Value -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="150" Width="274">
                         <Canvas Height="61" Margin="-2,0">
                             <TextBlock HorizontalAlignment="Left" Grid.Row="1" TextWrapping="Wrap" Text="Value" VerticalAlignment="Top" TextDecorations="{x:Null}" Canvas.Left="10" Canvas.Top="10"/>
-                            <Slider x:Name="valueSlider" HorizontalAlignment="Left" VerticalAlignment="Top" Width="274" TickPlacement="BottomRight" ToolTip="Change focus." SmallChange="1" Maximum="200" IsSnapToTickEnabled="True" TickFrequency="20" Grid.Column="1" Canvas.Top="31" Minimum="20"/>
+                            <metro:RangeSlider x:Name="valueSlider"
+                                               Width="274"
+                                               Canvas.Top="31"
+                                               Maximum="255"
+                                               SmallChange="10"
+                                               LargeChange="20"
+                                               TickPlacement="BottomRight" 
+                                               TickFrequency="5" 
+                                               LowerValueChanged="valueSlider_LowerValueChanged"
+                                               UpperValueChanged="valueSlider_UpperValueChanged" 
+                                               MinRangeWidth="1" 
+                                               MinRange="1" 
+                                               UpperValue="255" 
+                                               ToolTip="Change value." />
                         </Canvas>
                     </Border>
                 </Canvas>
