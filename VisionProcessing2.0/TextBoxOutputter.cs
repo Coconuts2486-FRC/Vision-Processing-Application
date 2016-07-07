@@ -11,7 +11,6 @@ namespace VisionProcessing2._0
     class TextBoxOutputter : TextWriter
     {
         TextBox textBox = null;
-
         public TextBoxOutputter(TextBox output)
         {
             textBox = output;
@@ -31,7 +30,7 @@ namespace VisionProcessing2._0
 
         public override Encoding Encoding
         {
-            get { return System.Text.Encoding.UTF8; }
+            get { return Encoding.UTF8; }
         }
     }
 }

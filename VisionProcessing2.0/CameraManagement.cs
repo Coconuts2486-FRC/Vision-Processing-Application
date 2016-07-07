@@ -7,45 +7,33 @@ using System.Threading.Tasks;
 
 namespace VisionProcessing2._0
 {
-    class CameraManagement : Capture
+    public class CameraManagement : Capture
     {
         public CameraManagement()
         {
-            setInitialSettings();
-        }
-        #region Local Variables
-        private double cBrightness;
-        private double cExposure;
-        private double cFocus;
-        private double cFPS;
-        #endregion
-        private void setInitialSettings()
-        {
-            cBrightness = brightness;
-            cExposure = exposure;
-            cFocus = focus;
-            cFPS = fps;
+            
         }
         #region Getters and setters
+        public DataHolder dataHolder = new DataHolder();
         public double brightness
         {
             get { return GetCaptureProperty(Emgu.CV.CvEnum.CapProp.Brightness); }
-            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Brightness, value); }
+            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Brightness, value); dataHolder.brightness = value; }
         }
         public double exposure
         {
             get { return GetCaptureProperty(Emgu.CV.CvEnum.CapProp.Exposure); }
-            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Exposure, value); }
+            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Exposure, value); dataHolder.exposure = value; }
         }
         public double focus
         {
             get { return GetCaptureProperty(Emgu.CV.CvEnum.CapProp.Focus); }
-            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Focus, value); }
+            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Focus, value); dataHolder.focus = value; }
         }
         public double fps
         {
             get { return GetCaptureProperty(Emgu.CV.CvEnum.CapProp.Fps); }
-            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Fps, value); }
+            set { SetCaptureProperty(Emgu.CV.CvEnum.CapProp.Fps, value); dataHolder.fps = value; }
         }
         #endregion
     }

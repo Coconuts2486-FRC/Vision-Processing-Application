@@ -129,6 +129,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CameraManagement.cs" />
+    <Compile Include="DataHolder.cs" />
     <Compile Include="HSVFilter.cs" />
     <Compile Include="TextBoxOutputter.cs" />
     <Page Include="ImageDisplay.xaml">
@@ -193,6 +194,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="assets\camera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="assets\save.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -17,6 +17,7 @@ using Emgu.CV.UI;
 using System.Windows.Threading;
 using Emgu.CV.Structure;
 using Emgu.CV.CvEnum;
+using Microsoft.Win32;
 
 namespace VisionProcessing2._0
 {
@@ -25,15 +26,21 @@ namespace VisionProcessing2._0
     /// </summary>
     public partial class MainWindow
     {
+        DateTime start = new DateTime();
         public MainWindow()
         {
+            start = DateTime.Now;
+            //Create a new capture and attach an event to it.
+            try { camManager = new CameraManagement(); }
+            catch (NullReferenceException ex) { MessageBox.Show("Camera Manager could not be instantiated.\nBEGIN MESSAGE\n============\n" + ex.Message); }
+            Application.Current.Exit += new ExitEventHandler(SystemEvents_SessionEnded);
             cooldownSetup();
             InitializeComponent();
             getAvailableCameras();
             timerSetup();
             console();
             startCapture();
-            hueTextBlock.DataContext = hsvFilter;
+            bindControlFunctions();
         }
 
         private void getAvailableCameras()
@@ -90,7 +97,7 @@ namespace VisionProcessing2._0
             GC.Collect();
         }
         #region Display Image
-        private CameraManagement camManager = null;
+        public CameraManagement camManager;
         TextBoxOutputter textBoxOutput;
         /// <summary>
         /// Initializes the capture and handles involved exceptions.
@@ -99,6 +106,7 @@ namespace VisionProcessing2._0
         {
             textBoxOutput = new TextBoxOutputter(TextBoxConsole);
             Console.SetOut(textBoxOutput);
+            Console.WriteLine("{0} - Application started. Have a fantastic match!", start);
             Console.WriteLine("Initialized custom console output. Enjoy!");
         }
         private void startCapture()
@@ -110,10 +118,6 @@ namespace VisionProcessing2._0
                 MessageBox.Show("An exception has occured. Did you include the necessary 64-bit DLLs from EMGU?\n"
                 + "\nBEGIN MESSAGE \n ================\n" + ex.Message);
             }
-
-            //Create a new capture and attach an event to it.
-            try { camManager = new CameraManagement(); }
-            catch (NullReferenceException ex) { MessageBox.Show("Camera Manager could not be instantiated.\nBEGIN MESSAGE\n============\n" + ex.Message); }
             setDimensions();
             setOptimalProperties();
         }
@@ -178,11 +182,11 @@ namespace VisionProcessing2._0
             CapturedImageBox.Image = frame;
             ProcessMedian(frame);
         }
-        int medianTolerance = 1;
+        //int medianTolerance = 1;
         private void ProcessMedian(Mat frame)
         {
             Mat filtered = new Mat();
-            CvInvoke.MedianBlur(frame, filtered, medianTolerance);
+            CvInvoke.MedianBlur(frame, filtered, camManager.dataHolder.medianTolerance);
             MedianImageBox.Image = filtered;
             ProcessHSV(filtered);
         }
@@ -224,15 +228,15 @@ namespace VisionProcessing2._0
         }
         private void medianSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if(medianTolerance % 2 == 1)
+            try
             {
-                medianTolerance = (int)e.NewValue;
-                Console.WriteLine("Median Slider: {0} Value set: {1}", e.NewValue, medianTolerance);
+                if (camManager.dataHolder.medianTolerance % 2 == 1)
+                {
+                    camManager.dataHolder.medianTolerance = (int)e.NewValue;
+                }
+                Console.WriteLine("Median Slider: {0} Value set: {1}", e.NewValue, camManager.dataHolder.medianTolerance);
             }
-            else
-            {
-                Console.WriteLine("Median Slider: {0} Value set: {1}", e.NewValue, medianTolerance);
-            }
+            catch (NullReferenceException) { }
         }
         #endregion
         private int selectionCountHSV;
@@ -273,6 +277,7 @@ namespace VisionProcessing2._0
                 HSVImageCanvas.Height = height;
             }
         }
+        #region HSV Sliders
         private void updateRangeSliders()
         {
             if (!coolDown.IsEnabled)
@@ -324,6 +329,153 @@ namespace VisionProcessing2._0
         private void valueSlider_UpperValueChanged(object sender, MahApps.Metro.Controls.RangeParameterChangedEventArgs e)
         {
             updateRangeSliders();
+        }
+        #endregion
+
+        public static RoutedCommand SaveKey = new RoutedCommand();
+        public static RoutedCommand SaveAsKey = new RoutedCommand();
+        public static RoutedCommand LoadKey = new RoutedCommand();
+        private void bindControlFunctions()
+        {
+            SaveKey.InputGestures.Add(new KeyGesture(Key.S, ModifierKeys.Control));
+            CommandBindings.Add(new CommandBinding(SaveKey, SaveButton_Click));
+            SaveAsKey.InputGestures.Add(new KeyGesture(Key.A, ModifierKeys.Control));
+            CommandBindings.Add(new CommandBinding(SaveAsKey, SaveAsButton_Click));
+            LoadKey.InputGestures.Add(new KeyGesture(Key.L, ModifierKeys.Control));
+            CommandBindings.Add(new CommandBinding(LoadKey, LoadButton_Click));
+            
+        }
+        string path;
+        /// <summary>
+        /// Save data and create a new file.
+        /// </summary>
+        private void SaveData()
+        {
+            updateHSV();
+            SaveFileDialog dlg = new SaveFileDialog();
+
+            dlg.FileName = ""; //Default file name, left blank to force user to put in name
+            dlg.DefaultExt = ".xml"; //Sets the default extension
+            dlg.Filter = "XML documents (.xml)|*.xml"; //Forces user to use XML
+
+            //Shows dialog box and sets variable for whether or not user cancelled
+            bool? result = dlg.ShowDialog();
+
+            //Process save file dialog box results
+            if (result == true)
+            {
+                try
+                {
+                    //Get path
+                    path = dlg.FileName;
+                    //Write filename to console
+                    Console.WriteLine("Saving file to " + dlg.FileName);
+                    System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
+                    System.IO.FileStream file = System.IO.File.Create(path);
+                    writer.Serialize(file, camManager.dataHolder);
+                    file.Close();
+                }
+                catch (InvalidOperationException) { MessageBox.Show("Storage is either full or file exists and is read only."); }
+                catch (System.IO.PathTooLongException) { MessageBox.Show("Path too long."); }
+            }
+        }
+        private void updateHSV()
+        {
+            camManager.dataHolder.lhue = hsvFilter.lowerHue;
+            camManager.dataHolder.uhue = hsvFilter.upperHue;
+            camManager.dataHolder.lsat = hsvFilter.lowerSaturation;
+            camManager.dataHolder.usat = hsvFilter.upperSaturation;
+            camManager.dataHolder.lval = hsvFilter.lowerValue;
+            camManager.dataHolder.uval = hsvFilter.upperValue;
+        }
+        private void updateDataHolder()
+        {
+            camManager.brightness = camManager.dataHolder.brightness;
+            brightnessSlider.Value = camManager.brightness;
+            camManager.exposure = camManager.dataHolder.exposure;
+            exposureSlider.Value = camManager.exposure;
+            camManager.focus = camManager.dataHolder.focus;
+            focusSlider.Value = camManager.focus;
+            camManager.fps = camManager.dataHolder.fps;
+            medianSlider.Value = camManager.dataHolder.medianTolerance;
+            hsvFilter.setValue((int)camManager.dataHolder.lhue, HSVFilter.Context.lowerHue);
+            hueSlider.LowerValue = camManager.dataHolder.lhue;
+            hsvFilter.setValue((int)camManager.dataHolder.uhue, HSVFilter.Context.upperHue);
+            hueSlider.UpperValue = camManager.dataHolder.uhue;
+            hsvFilter.setValue((int)camManager.dataHolder.lsat, HSVFilter.Context.lowerSaturation);
+            saturationSlider.LowerValue = camManager.dataHolder.lsat;
+            hsvFilter.setValue((int)camManager.dataHolder.usat, HSVFilter.Context.upperSaturation);
+            saturationSlider.UpperValue = camManager.dataHolder.usat;
+            hsvFilter.setValue((int)camManager.dataHolder.lval, HSVFilter.Context.lowerValue);
+            valueSlider.LowerValue = camManager.dataHolder.lval;
+            hsvFilter.setValue((int)camManager.dataHolder.uval, HSVFilter.Context.upperValue);
+            valueSlider.UpperValue = camManager.dataHolder.uval;
+        }
+        private void SystemEvents_SessionEnded(object sender, ExitEventArgs e)
+        {
+            updateHSV();
+            try
+            {
+                //Write filename to console
+                Console.WriteLine("{0} - Saving file to My Documents folder because application is closing. Hope you had a great match!", DateTime.Now);
+                System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
+                if(!System.IO.Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing"))
+                {
+                    System.IO.Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing");
+                }
+                System.IO.FileStream file = System.IO.File.Create(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing\\LatestBackup.xml");
+                writer.Serialize(file, camManager.dataHolder);
+                file.Close();
+            }
+            catch (InvalidOperationException) { MessageBox.Show("Storage is either full or file exists and is read only."); }
+        }
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Save button clicked!");
+            updateHSV();
+            if (!string.IsNullOrEmpty(path))
+            {
+                Console.WriteLine("Saving file to " + path);
+                System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
+                System.IO.FileStream file = System.IO.File.Create(path);
+                writer.Serialize(file, camManager.dataHolder);
+                file.Close();
+            }
+            else
+            {
+                SaveData();
+            }
+        }
+        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Save as button clicked!");
+            SaveData();
+        }
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Load button clicked!");
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "XML documents (.xml)|*.xml";
+
+            bool? result = dlg.ShowDialog();
+
+            if(result == true)
+            {
+                try
+                {
+                    Console.WriteLine("Loading file from " + dlg.FileName);
+                    path = dlg.FileName;
+                    System.Xml.Serialization.XmlSerializer reader = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
+                    System.IO.StreamReader file = new System.IO.StreamReader(@"" + dlg.FileName);
+                    camManager.dataHolder = reader.Deserialize(file) as DataHolder;
+                    file.Close();
+                    updateDataHolder();             
+                }
+                catch (InvalidOperationException ex) { MessageBox.Show("File not found. \n" + ex.Message); }
+                catch (AccessViolationException) { }
+                catch (Exception ex) { MessageBox.Show(ex.Message); }
+            }
         }
     }
 }
