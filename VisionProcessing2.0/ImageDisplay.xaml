@@ -35,15 +35,20 @@
             <TabItem x:Name="ImageTabControlSource">
                 <TabItem.HeaderTemplate>
                     <DataTemplate>
-                        <!-- Add image preview eventually (if pretty) -->
                         <TextBlock Text="Source" FontSize="12"/>
                     </DataTemplate>
                 </TabItem.HeaderTemplate>
-                <Canvas x:Name="SourceCanvas">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="SourceRow" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="SourceCol" />
+                    </Grid.ColumnDefinitions>
                     <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <emui:ImageBox x:Name="CapturedImageBox"></emui:ImageBox>
+                        <emui:ImageBox x:Name="SourceImageBox" />
                     </WindowsFormsHost>
-                </Canvas>
+                </Grid>
             </TabItem>
             <!-- Median Image -->
             <TabItem x:Name="ImageTabControlMedian">
@@ -52,11 +57,17 @@
                         <TextBlock Text="Median" FontSize="12"/>
                     </DataTemplate>
                 </TabItem.HeaderTemplate>
-                <Canvas x:Name="MedianCanvas">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="MedianRow" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="MedianCol" />
+                    </Grid.ColumnDefinitions>
                     <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
-                        <emui:ImageBox x:Name="MedianImageBox"></emui:ImageBox>
+                        <emui:ImageBox x:Name="MedianImageBox" />
                     </WindowsFormsHost>
-                </Canvas>
+                </Grid>
             </TabItem>
             <!-- HSV Threshold -->
             <TabItem x:Name="ImageTabControlHSV">
@@ -65,11 +76,35 @@
                         <TextBlock Text="HSV" FontSize="12" />
                     </DataTemplate>
                 </TabItem.HeaderTemplate>
-                <Canvas x:Name="HSVImageCanvas">
-                    <WindowsFormsHost x:Name="HSVHost">
-                        <emui:ImageBox x:Name="HSVImageBox"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="240" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320" />
+                    </Grid.ColumnDefinitions>
+                    <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <emui:ImageBox x:Name="HSVImageBox" />
                     </WindowsFormsHost>
-                </Canvas>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="ContoursTab">
+                <TabItem.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="Contours" FontSize="12"/>
+                    </DataTemplate>
+                </TabItem.HeaderTemplate>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="240" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320" />
+                    </Grid.ColumnDefinitions>
+                    <WindowsFormsHost HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <emui:ImageBox x:Name="ContoursImageBox" />
+                    </WindowsFormsHost>
+                </Grid>
             </TabItem>
         </TabControl>
         <!-- Tab control for column 1 items -->
@@ -126,6 +161,7 @@
                     </DataTemplate>
                 </TabItem.HeaderTemplate>
                 <Canvas>
+                    <TextBlock x:Name="contoursNumber" Text="Hi" Canvas.Left="10" Canvas.Top="215" />
                     <!-- Hue -->
                     <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Canvas.Left="10" Canvas.Top="10" Width="274">
                         <Canvas Height="61" Margin="-2,0">

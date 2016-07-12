@@ -1,23 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Emgu.CV;
-using Emgu.CV.UI;
 using System.Windows.Threading;
 using Emgu.CV.Structure;
-using Emgu.CV.CvEnum;
 using Microsoft.Win32;
+using Emgu.CV.Util;
+using System.Collections.Generic;
 
 namespace VisionProcessing2._0
 {
@@ -132,34 +122,28 @@ namespace VisionProcessing2._0
             camManager.Retrieve(frame, 0);
             int ratioWidth = frame.Width / ratio;
             int ratioHeight = frame.Height / ratio;
-            CapturedImageBox.Width = ratioWidth;
-            CapturedImageBox.Height = ratioHeight;
+            
+            SourceImageBox.Width = ratioWidth;
+            SourceCol.Width = new GridLength(ratioWidth);
+            SourceImageBox.Height = ratioHeight;
+            SourceRow.Height = new GridLength(ratioHeight);
+            
             MedianImageBox.Width = ratioWidth;
+            MedianCol.Width = new GridLength(ratioWidth);
             MedianImageBox.Height = ratioHeight;
+            MedianRow.Height = new GridLength(ratioHeight);
+
             HSVImageBox.Width = ratioWidth;
             HSVImageBox.Height = ratioHeight;
             height = frame.Height / ratio;
             width = frame.Width / ratio;
-            Console.WriteLine("Width of frame: {0} Width of ImageBox: {1} Final width: {2}", frame.Width, CapturedImageBox.Width, frame.Width / ratio);
-            Console.WriteLine("Height of frame: {0} Height of ImageBox: {1} Final height: {2}", frame.Height, CapturedImageBox.Height, frame.Height / ratio);
-            SourceCanvas.Width = width;
-            SourceCanvas.Height = height;
-            SourceCanvas.MaxHeight = height;
-            SourceCanvas.MaxWidth = width;
-            MedianCanvas.Width = width;
-            MedianCanvas.Height = height;
-            MedianCanvas.MaxHeight = height;
-            MedianCanvas.MaxWidth = width;
-            HSVImageCanvas.Width = width;
-            HSVImageCanvas.Height = height;
-            HSVImageCanvas.MaxHeight = height;
-            HSVImageCanvas.MaxWidth = width;
-            TextBoxConsole.MaxHeight = height;
-            Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
-            CapturedImageBox.OnZoomScaleChange += zoomScaleUpdated;
-            CapturedImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+
+            TextBoxConsole.MaxHeight = ratioHeight;
+
+            SourceImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            
         }
         private void setOptimalProperties()
         {
@@ -170,22 +154,34 @@ namespace VisionProcessing2._0
         }
         private void zoomScaleUpdated(object sender, EventArgs arg)
         {
-            Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
+            //Console.WriteLine("Image zoom changed to {0}", CapturedImageBox.ZoomScale);
         }
         Mat frame;
+        private void SetContours()
+        {
+            Console.WriteLine("Before width: " + ContoursImageBox.Width);
+            ContoursImageBox.Width = 320;
+            Console.WriteLine("After width: " + ContoursImageBox.Width);
+            ContoursImageBox.Height = 240;
+        }
         private void ProcessSource(object sender, EventArgs arg)
         {
             //Forces the renderer to invalidate the screen, which then forces a redraw of the image, and then in turn increases the visual FPS. Programming.
             InvalidateVisual();
             frame = new Mat();
             camManager.Retrieve(frame, 0);
-            CapturedImageBox.Image = frame;
+            SourceImageBox.Image = frame;
+            if (setContours) SetContours();
+            setContours = false;
             ProcessMedian(frame);
         }
         //int medianTolerance = 1;
+        bool setContours = true;
         private void ProcessMedian(Mat frame)
         {
             Mat filtered = new Mat();
+            CvInvoke.PyrDown(frame, filtered);
+            CvInvoke.PyrUp(filtered, frame);
             CvInvoke.MedianBlur(frame, filtered, camManager.dataHolder.medianTolerance);
             MedianImageBox.Image = filtered;
             ProcessHSV(filtered);
@@ -195,10 +191,42 @@ namespace VisionProcessing2._0
         {
             using (Image<Hsv, byte> hsv = frame.ToImage<Hsv, byte>())
             {
-                
-                HSVImageBox.Image = hsv.InRange(hsvFilter.lowerFilter, hsvFilter.upperFilter);
+                Image<Gray, byte> dest = hsv.InRange(hsvFilter.lowerFilter, hsvFilter.upperFilter);
+                HSVImageBox.Image = dest;
+                ProcessContours(dest);
             }
-                
+        }
+        private List<double> widthContour = new List<double>();
+        private List<double> heightContour = new List<double>();
+        private List<double> hypotenuseContour = new List<double>();
+        private List<double> areaContour = new List<double>();
+        private List<double> perimeterContour = new List<double>();
+        private void ProcessContours(Image<Gray, byte> source)
+        {
+            double cannyThreshold = 180.0;
+            double cannyThresholdLinking = 120.0;
+            Image<Gray, byte> dest = new Image<Gray, byte>(source.Width, source.Height);
+            CvInvoke.Canny(source, dest, cannyThreshold, cannyThresholdLinking);
+            ContoursImageBox.Image = dest;
+            using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+            {
+                CvInvoke.FindContours(dest, contours, dest, Emgu.CV.CvEnum.RetrType.Tree, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxNone, new System.Drawing.Point(0, 0));
+                //Figure out indexing - second bracket is number of elements in array, first is 
+                System.Drawing.Point[][] x = contours.ToArrayOfArray();
+                try { contoursNumber.Text = x.Length.ToString(); }
+                catch(IndexOutOfRangeException) { }
+                //for(int i = 0; i <= contours.Size; i++)
+                //{
+                //    widthContour.Add(CvInvoke.ArcLength(contours[i], false));
+                //    areaContour.Add(CvInvoke.ContourArea(contours[i], false));
+                //}
+                //double[] area = areaContour.ToArray();
+                //double[] height = heightContour.ToArray();
+                //for (int i = 0; i <= area.Length; i++)
+                //{
+                //    Console.WriteLine("Area: {0}, Length:", area[i]);
+                //}
+            }
         }
         #endregion
         #region Camera Settings Buttons
@@ -242,39 +270,46 @@ namespace VisionProcessing2._0
         private int selectionCountHSV;
         private void ImageTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            CapturedImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            SourceImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            ContoursImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
             TabItem currentTab = ImageTabControl.SelectedItem as TabItem;
             if(currentTab == ImageTabControlSource)
             {
                 Console.WriteLine("Source tab selected.");
-                CapturedImageBox.Width = width;
-                SourceCanvas.MaxWidth = width;
-                CapturedImageBox.Height = height;
-                SourceCanvas.MaxHeight = height;
+                //CapturedImageBox.Width = width;
+                //SourceCanvas.MaxWidth = width;
+                //CapturedImageBox.Height = height;
+                //SourceCanvas.MaxHeight = height;
             }
             else if(currentTab == ImageTabControlMedian)
             {
                 Console.WriteLine("Median tab selected.");
                 MedianImageBox.Width = width;
-                MedianCanvas.MaxWidth = width;
+                //MedianCanvas.MaxWidth = width;
                 MedianImageBox.Height = height;
-                MedianCanvas.MaxHeight = height;
+                //MedianCanvas.MaxHeight = height;
             }
             else if(currentTab == ImageTabControlHSV)
             {
                 selectionCountHSV++;
                 if (selectionCountHSV >= 2)
                 {
-                    Canvas.SetTop(HSVHost, -120);
-                    Canvas.SetLeft(HSVHost, -160);
+                    //Canvas.SetTop(HSVHost, -120);
+                    //Canvas.SetLeft(HSVHost, -160);
                 }
                 Console.WriteLine("HSV tab selected. Count: {0}", selectionCountHSV);
                 HSVImageBox.Width = width;
-                HSVImageCanvas.Width = width;
+                //HSVImageCanvas.Width = width;
                 HSVImageBox.Height = height;
-                HSVImageCanvas.Height = height;
+                //HSVImageCanvas.Height = height;
+            }
+            else if(currentTab == ContoursTab)
+            {
+                //ContoursImageBox.Width = 320;
+                //ContoursImageBox.Height = 240;
+                Console.WriteLine("Contours Image Box");
             }
         }
         #region HSV Sliders
