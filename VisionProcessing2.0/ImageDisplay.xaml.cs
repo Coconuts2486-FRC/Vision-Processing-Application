@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using Emgu.CV.Structure;
 using Microsoft.Win32;
 using Emgu.CV.Util;
+using System.Threading;
 using System.Collections.Generic;
 
 namespace VisionProcessing2._0
@@ -26,11 +27,12 @@ namespace VisionProcessing2._0
             Application.Current.Exit += new ExitEventHandler(SystemEvents_SessionEnded);
             cooldownSetup();
             InitializeComponent();
-            getAvailableCameras();
             timerSetup();
             console();
             startCapture();
+            LoadOnStartup();
             bindControlFunctions();
+            contourDataAnalyzer = new ContourDataAnalyzer();
         }
 
         private void getAvailableCameras()
@@ -96,7 +98,7 @@ namespace VisionProcessing2._0
         {
             textBoxOutput = new TextBoxOutputter(TextBoxConsole);
             Console.SetOut(textBoxOutput);
-            Console.WriteLine("{0} - Application started. Have a fantastic match!", start);
+            Console.WriteLine("{0} - Application started. \nHave a fantastic match!", start);
             Console.WriteLine("Initialized custom console output. Enjoy!");
         }
         private void startCapture()
@@ -120,37 +122,48 @@ namespace VisionProcessing2._0
             ratio = 2;
             Mat frame = new Mat();
             camManager.Retrieve(frame, 0);
-            int ratioWidth = frame.Width / ratio;
-            int ratioHeight = frame.Height / ratio;
-            
-            SourceImageBox.Width = ratioWidth;
-            SourceCol.Width = new GridLength(ratioWidth);
-            SourceImageBox.Height = ratioHeight;
-            SourceRow.Height = new GridLength(ratioHeight);
-            
-            MedianImageBox.Width = ratioWidth;
-            MedianCol.Width = new GridLength(ratioWidth);
-            MedianImageBox.Height = ratioHeight;
-            MedianRow.Height = new GridLength(ratioHeight);
+            if(frame.Width != 0)
+            {
+                int ratioWidth = frame.Width / ratio;
+                int ratioHeight = frame.Height / ratio;
 
-            HSVImageBox.Width = ratioWidth;
-            HSVImageBox.Height = ratioHeight;
-            height = frame.Height / ratio;
-            width = frame.Width / ratio;
+                SourceImageBox.Width = ratioWidth;
+                SourceCol.Width = new GridLength(ratioWidth);
+                SourceImageBox.Height = ratioHeight;
+                SourceRow.Height = new GridLength(ratioHeight);
 
-            TextBoxConsole.MaxHeight = ratioHeight;
+                MedianImageBox.Width = ratioWidth;
+                MedianCol.Width = new GridLength(ratioWidth);
+                MedianImageBox.Height = ratioHeight;
+                MedianRow.Height = new GridLength(ratioHeight);
 
-            SourceImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
-            MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
-            HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+                HSVImageBox.Width = ratioWidth;
+                HSVImageBox.Height = ratioHeight;
+                height = frame.Height / ratio;
+                width = frame.Width / ratio;
+
+                TextBoxConsole.MaxHeight = ratioHeight;
+
+                SourceImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+                MedianImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+                HSVImageBox.SetZoomScale(0.5, new System.Drawing.Point(0, 0));
+            }
+            else
+            {
+                if (!System.IO.Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing"))
+                    System.IO.Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing");
+                string[] lines = { DateTime.Now.ToString(), "Oh no! No camera was detected! :(", "", "====================" };
+                System.IO.File.AppendAllLines(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing\\Log.txt", lines);
+                Environment.Exit(0);
+            }
             
         }
         private void setOptimalProperties()
         {
             camManager.exposure = -9;
             exposureSlider.Value = -9;
-            camManager.brightness = 110;
-            brightnessSlider.Value = 110;
+            camManager.brightness = 100;
+            brightnessSlider.Value = 100;
         }
         private void zoomScaleUpdated(object sender, EventArgs arg)
         {
@@ -196,11 +209,7 @@ namespace VisionProcessing2._0
                 ProcessContours(dest);
             }
         }
-        private List<double> widthContour = new List<double>();
-        private List<double> heightContour = new List<double>();
-        private List<double> hypotenuseContour = new List<double>();
-        private List<double> areaContour = new List<double>();
-        private List<double> perimeterContour = new List<double>();
+        VectorOfVectorOfPoint contours;
         private void ProcessContours(Image<Gray, byte> source)
         {
             double cannyThreshold = 180.0;
@@ -208,27 +217,20 @@ namespace VisionProcessing2._0
             Image<Gray, byte> dest = new Image<Gray, byte>(source.Width, source.Height);
             CvInvoke.Canny(source, dest, cannyThreshold, cannyThresholdLinking);
             ContoursImageBox.Image = dest;
-            using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+            using (contours = new VectorOfVectorOfPoint())
             {
                 CvInvoke.FindContours(dest, contours, dest, Emgu.CV.CvEnum.RetrType.Tree, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxNone, new System.Drawing.Point(0, 0));
-                //Figure out indexing - second bracket is number of elements in array, first is 
-                System.Drawing.Point[][] x = contours.ToArrayOfArray();
-                try { contoursNumber.Text = x.Length.ToString(); }
-                catch(IndexOutOfRangeException) { }
-                //for(int i = 0; i <= contours.Size; i++)
-                //{
-                //    widthContour.Add(CvInvoke.ArcLength(contours[i], false));
-                //    areaContour.Add(CvInvoke.ContourArea(contours[i], false));
-                //}
-                //double[] area = areaContour.ToArray();
-                //double[] height = heightContour.ToArray();
-                //for (int i = 0; i <= area.Length; i++)
-                //{
-                //    Console.WriteLine("Area: {0}, Length:", area[i]);
-                //}
+                contoursNumber.Text = (contours.Size / 2).ToString();
+                ShowBoundings();
             }
         }
+        ContourDataAnalyzer contourDataAnalyzer;
+        private void ShowBoundings()
+        {
+            contourDataAnalyzer.UpdateInfo(contours);
+        }
         #endregion
+
         #region Camera Settings Buttons
         private void exposureSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -422,6 +424,17 @@ namespace VisionProcessing2._0
             camManager.dataHolder.usat = hsvFilter.upperSaturation;
             camManager.dataHolder.lval = hsvFilter.lowerValue;
             camManager.dataHolder.uval = hsvFilter.upperValue;
+
+            camManager.dataHolder.NetworkTablesAddress = StaticResources.NetworkTablesAddress;
+            camManager.dataHolder.ratio = StaticResources.ContourRatio;
+            camManager.dataHolder.filter = StaticResources.SnapshotEnabled;
+
+            camManager.dataHolder.minBrightness = StaticResources.minBrightness;
+            camManager.dataHolder.maxBrightness = StaticResources.maxBrightness;
+            camManager.dataHolder.minExposure = StaticResources.minExposure;
+            camManager.dataHolder.maxExposure = StaticResources.maxExposure;
+            camManager.dataHolder.minFocus = StaticResources.minFocus;
+            camManager.dataHolder.maxFocus = StaticResources.maxFocus;
         }
         private void updateDataHolder()
         {
@@ -433,6 +446,13 @@ namespace VisionProcessing2._0
             focusSlider.Value = camManager.focus;
             camManager.fps = camManager.dataHolder.fps;
             medianSlider.Value = camManager.dataHolder.medianTolerance;
+
+            StaticResources.NetworkTablesAddress = camManager.dataHolder.NetworkTablesAddress;
+            AddressTextBox.Text = camManager.dataHolder.NetworkTablesAddress;
+
+            StaticResources.ContourRatio = camManager.dataHolder.ratio;
+            StaticResources.SnapshotEnabled = camManager.dataHolder.filter;
+
             hsvFilter.setValue((int)camManager.dataHolder.lhue, HSVFilter.Context.lowerHue);
             hueSlider.LowerValue = camManager.dataHolder.lhue;
             hsvFilter.setValue((int)camManager.dataHolder.uhue, HSVFilter.Context.upperHue);
@@ -445,6 +465,20 @@ namespace VisionProcessing2._0
             valueSlider.LowerValue = camManager.dataHolder.lval;
             hsvFilter.setValue((int)camManager.dataHolder.uval, HSVFilter.Context.upperValue);
             valueSlider.UpperValue = camManager.dataHolder.uval;
+
+            StaticResources.minFocus = camManager.dataHolder.minFocus;
+            focusSlider.Minimum = camManager.dataHolder.minFocus;
+            StaticResources.maxFocus = camManager.dataHolder.maxFocus;
+            focusSlider.Maximum = camManager.dataHolder.maxFocus;
+            StaticResources.minBrightness = camManager.dataHolder.minBrightness;
+            brightnessSlider.Minimum = camManager.dataHolder.minBrightness;
+            StaticResources.maxBrightness = camManager.dataHolder.maxBrightness;
+            brightnessSlider.Maximum = camManager.dataHolder.maxBrightness;
+            StaticResources.minExposure = camManager.dataHolder.minExposure;
+            exposureSlider.Minimum = camManager.dataHolder.minExposure;
+            StaticResources.maxExposure = camManager.dataHolder.maxExposure;
+            exposureSlider.Maximum = camManager.dataHolder.maxExposure;
+
         }
         private void SystemEvents_SessionEnded(object sender, ExitEventArgs e)
         {
@@ -452,7 +486,7 @@ namespace VisionProcessing2._0
             try
             {
                 //Write filename to console
-                Console.WriteLine("{0} - Saving file to My Documents folder because application is closing. Hope you had a great match!", DateTime.Now);
+                Console.WriteLine("{0} - Saving file to My Documents folder because application is closing. \nHope you had a great match!", DateTime.Now);
                 System.Xml.Serialization.XmlSerializer writer = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
                 if(!System.IO.Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\CocoNuts Vision Processing"))
                 {
@@ -511,6 +545,82 @@ namespace VisionProcessing2._0
                 catch (AccessViolationException) { }
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             }
+        }
+        private void LoadOnStartup()
+        {
+            try
+            {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).ToString() + "\\CocoNuts Vision Processing\\LatestBackup.xml";
+                Console.WriteLine("Loading file from " + path);
+                System.Xml.Serialization.XmlSerializer reader = new System.Xml.Serialization.XmlSerializer(typeof(DataHolder));
+                System.IO.StreamReader file = new System.IO.StreamReader(@"" + path);
+                camManager.dataHolder = reader.Deserialize(file) as DataHolder;
+                file.Close();
+                updateDataHolder();
+                if(StaticResources.SnapshotEnabled)
+                {
+                    TakeSnapButton.Content = "Add Snapshot";
+                }
+            }
+            catch (InvalidOperationException ex) { MessageBox.Show("File not found. \n" + ex.Message); }
+            catch (AccessViolationException) { }
+            catch (Exception)
+            {
+                camManager.dataHolder = new DataHolder { brightness = 100, exposure = -6, focus = 20, fps = 0, lhue = 0, uhue = 180, lsat = 0, usat = 255, lval = 0, uval = 255, medianTolerance = 1, NetworkTablesAddress="127.0.0.1", maxBrightness = 200, minBrightness = 0, maxExposure = -2, minExposure = -9, maxFocus = 200, minFocus = 0 };
+                updateDataHolder();
+            }
+        }
+        private void GetReportButton_Click(object sender, RoutedEventArgs e)
+        {
+            NetworkTables.NetworkTable table = NetworkTables.NetworkTable.GetTable("CamData");
+            double[] heights = table.GetNumberArray("Height", new double[] { 0 });
+            foreach(double h in heights)
+            {
+                Console.WriteLine(h);
+            }
+        }
+
+        private void ChangeParameters(object sender, RoutedEventArgs e)
+        {
+            ChangeParameters paramWindow = new ChangeParameters();
+            paramWindow.Show();
+        }
+
+        private void AddressUpdated(object sender, RoutedEventArgs e)
+        {
+            StaticResources.NetworkTablesAddress = AddressTextBox.Text;
+        }
+
+        private void TakeSnapshot(object sender, RoutedEventArgs e)
+        {
+            //If a snapshot is already present
+            if (StaticResources.SnapshotEnabled)
+            {
+                Console.WriteLine("Snapshot already enabled. Adding another!");
+                contourDataAnalyzer.AddSnapshot();
+            }
+            //First-time
+            else
+            {
+                NetworkTables.NetworkTable table = NetworkTables.NetworkTable.GetTable("CamData");
+                double[] heights = table.GetNumberArray("Height", new double[] { 1 });
+                double[] widths = table.GetNumberArray("Width", new double[] { 1 });
+
+                try
+                {
+                    StaticResources.ContourRatio.Add(widths[0] / heights[0]);
+                    StaticResources.SnapshotEnabled = true;
+                    TakeSnapButton.Content = "Add Snapshot";
+                }
+                catch (IndexOutOfRangeException) { MessageBox.Show("Index out of range. Please clear snapshot and try again."); }
+            }
+        }
+
+        private void ClearSnapshot(object sender, RoutedEventArgs e)
+        {
+            StaticResources.SnapshotEnabled = false;
+            StaticResources.ContourRatio = new List<double>();
+            TakeSnapButton.Content = "Take Snapshot";
         }
     }
 }

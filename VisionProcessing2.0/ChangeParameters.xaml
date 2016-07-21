@@ -1,0 +1,52 @@
+﻿<Window x:Class="VisionProcessing2._0.ChangeParameters"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VisionProcessing2._0"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+        mc:Ignorable="d"
+        Width="300" SizeToContent="Height">
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="Change the range of the sliders for exposure, brightness, and focus. Effective after app restart." Margin="0 0 0 10" TextWrapping="Wrap"/>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Lower Exposure" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="lExp"/>
+                </DockPanel>
+            </Border>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Upper Exposure" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="uExp"/>
+                </DockPanel>
+            </Border>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Lower Brightness" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="lBri"/>
+                </DockPanel>
+            </Border>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Upper Brightness" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="uBri"/>
+                </DockPanel>
+            </Border>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Lower Focus" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="lFoc"/>
+                </DockPanel>
+            </Border>
+            <Border BorderBrush="#CECECE" BorderThickness="2" CornerRadius="4" Margin="0 0 0 5">
+                <DockPanel>
+                    <Label Content="Upper Focus" Width="150"/>
+                    <TextBox Background="LightGray" x:Name="uFoc"/>
+                </DockPanel>
+            </Border>
+            <Button Content="Finish" FontWeight="Normal" metro:ButtonHelper.PreserveTextCase="True" FontSize="12" FontFamily="Segoe UI" Margin="0 0 0 5" Click="Finish"/>
+        </StackPanel>
+    </Grid>
+</Window>
